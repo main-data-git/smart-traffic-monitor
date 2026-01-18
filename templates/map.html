@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic Map - Bangalore</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 600px;
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .map-container {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🗺️ Traffic Map View</h1>
+            <p>Real-time Traffic Monitoring - Bangalore</p>
+        </header>
+
+        <nav>
+            <a href="/">Dashboard</a>
+            <a href="/map" class="active">Map View</a>
+        </nav>
+
+        <div class="map-container">
+            <h2>Bangalore Traffic Monitoring Locations</h2>
+            <div id="map"></div>
+            
+            <div class="legend">
+                <h3>Traffic Density Legend</h3>
+                <div class="legend-item">
+                    <span class="legend-marker" style="background-color: #4CAF50;"></span>
+                    <span>Low Traffic (≤5 vehicles)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-marker" style="background-color: #FF9800;"></span>
+                    <span>Medium Traffic (6-15 vehicles)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-marker" style="background-color: #F44336;"></span>
+                    <span>High Traffic (>15 vehicles)</span>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Powered by Leaflet.js & OpenStreetMap</p>
+        </footer>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Initialize map centered on Bangalore
+        const map = L.map('map').setView([12.9716, 77.5946], 12);
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Sample traffic monitoring locations in Bangalore
+        const locations = [
+            {
+                name: 'MG Road Junction',
+                lat: 12.9762,
+                lng: 77.6033,
+                density: 'High',
+                vehicles: 23
+            },
+            {
+                name: 'Silk Board Junction',
+                lat: 12.9177,
+                lng: 77.6238,
+                density: 'High',
+                vehicles: 28
+            },
+            {
+                name: 'Whitefield Main Road',
+                lat: 12.9698,
+                lng: 77.7499,
+                density: 'Medium',
+                vehicles: 12
+            },
+            {
+                name: 'Indiranagar 100ft Road',
+                lat: 12.9719,
+                lng: 77.6412,
+                density: 'Medium',
+                vehicles: 10
+            },
+            {
+                name: 'Koramangala 80ft Road',
+                lat: 12.9352,
+                lng: 77.6245,
+                density: 'Low',
+                vehicles: 4
+            },
+            {
+                name: 'Hebbal Flyover',
+                lat: 13.0358,
+                lng: 77.5970,
+                density: 'High',
+                vehicles: 31
+            },
+            {
+                name: 'Electronic City',
+                lat: 12.8456,
+                lng: 77.6603,
+                density: 'Medium',
+                vehicles: 14
+            },
+            {
+                name: 'Jayanagar 4th Block',
+                lat: 12.9250,
+                lng: 77.5937,
+                density: 'Low',
+                vehicles: 5
+            }
+        ];
+
+        // Color mapping for density
+        const densityColors = {
+            'Low': '#4CAF50',
+            'Medium': '#FF9800',
+            'High': '#F44336'
+        };
+
+        // Add markers for each location
+        locations.forEach(loc => {
+            const color = densityColors[loc.density];
+            
+            // Create custom icon
+            const customIcon = L.divIcon({
+                className: 'custom-marker',
+                html: `<div style="
+                    background-color: ${color};
+                    width: 24px;
+                    height: 24px;
+                    border-radius: 50%;
+                    border: 3px solid white;
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                "></div>`,
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
+            });
+
+            // Add marker
+            const marker = L.marker([loc.lat, loc.lng], { icon: customIcon }).addTo(map);
+            
+            // Add popup
+            marker.bindPopup(`
+                <div style="text-align: center;">
+                    <strong style="font-size: 14px;">${loc.name}</strong><br>
+                    <span style="color: ${color}; font-weight: bold; font-size: 16px;">${loc.density} Traffic</span><br>
+                    <span style="font-size: 13px;">🚗 ${loc.vehicles} vehicles detected</span>
+                </div>
+            `);
+        });
+
+        // Add a main marker for city center
+        L.marker([12.9716, 77.5946])
+            .addTo(map)
+            .bindPopup('<strong>Bangalore City Center</strong>')
+            .openPopup();
+    </script>
+</body>
+</html>
