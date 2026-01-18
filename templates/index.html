@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Traffic Monitor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚦 Smart Traffic Monitoring System</h1>
+            <p>AI-Powered Vehicle Detection & Traffic Analysis</p>
+        </header>
+
+        <nav>
+            <a href="/" class="active">Dashboard</a>
+            <a href="/map">Map View</a>
+        </nav>
+
+        <div class="upload-section">
+            <h2>Upload Traffic Image</h2>
+            <form id="uploadForm">
+                <input type="file" id="imageInput" accept="image/png,image/jpeg,image/jpg" required>
+                <button type="submit">Analyze Traffic</button>
+            </form>
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Analyzing traffic...</p>
+            </div>
+        </div>
+
+        <div id="results" class="results" style="display: none;">
+            <div class="results-grid">
+                <div class="image-preview">
+                    <h3>Uploaded Image</h3>
+                    <img id="previewImage" src="" alt="Traffic Image">
+                </div>
+
+                <div class="analysis-panel">
+                    <h3>Traffic Analysis</h3>
+                    
+                    <div class="stat-card">
+                        <div class="stat-label">Total Vehicles</div>
+                        <div class="stat-value" id="totalVehicles">0</div>
+                    </div>
+
+                    <div class="vehicle-breakdown">
+                        <h4>Vehicle Breakdown</h4>
+                        <div class="breakdown-grid">
+                            <div class="breakdown-item">
+                                <span>🚗 Cars:</span>
+                                <strong id="carCount">0</strong>
+                            </div>
+                            <div class="breakdown-item">
+                                <span>🏍️ Bikes:</span>
+                                <strong id="bikeCount">0</strong>
+                            </div>
+                            <div class="breakdown-item">
+                                <span>🚌 Buses:</span>
+                                <strong id="busCount">0</strong>
+                            </div>
+                            <div class="breakdown-item">
+                                <span>🚚 Trucks:</span>
+                                <strong id="truckCount">0</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="density-card">
+                        <div class="density-label">Traffic Density</div>
+                        <div class="density-value" id="densityValue">-</div>
+                    </div>
+
+                    <div class="signal-card">
+                        <h4>Green Signal Duration</h4>
+                        <div class="duration-value" id="greenDuration">-- sec</div>
+                    </div>
+
+                    <div class="traffic-light">
+                        <div class="light red" id="redLight"></div>
+                        <div class="light yellow" id="yellowLight"></div>
+                        <div class="light green" id="greenLight"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Powered by YOLOv8 | Built with Flask</p>
+        </footer>
+    </div>
+
+    <script>
+        const uploadForm = document.getElementById('uploadForm');
+        const imageInput = document.getElementById('imageInput');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const file = imageInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('image', file);
+
+            // Show loading
+            loading.style.display = 'block';
+            results.style.display = 'none';
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayResults(data);
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Upload failed: ' + error.message);
+            } finally {
+                loading.style.display = 'none';
+            }
+        });
+
+        function displayResults(data) {
+            // Show results section
+            results.style.display = 'block';
+
+            // Display image
+            document.getElementById('previewImage').src = data.image_url;
+
+            // Update statistics
+            document.getElementById('totalVehicles').textContent = data.total_vehicles;
+            document.getElementById('carCount').textContent = data.vehicle_counts.car;
+            document.getElementById('bikeCount').textContent = data.vehicle_counts.motorcycle;
+            document.getElementById('busCount').textContent = data.vehicle_counts.bus;
+            document.getElementById('truckCount').textContent = data.vehicle_counts.truck;
+
+            // Update density
+            const densityEl = document.getElementById('densityValue');
+            densityEl.textContent = data.density;
+            densityEl.style.color = data.density_color;
+
+            // Update green duration
+            document.getElementById('greenDuration').textContent = data.green_duration + ' sec';
+
+            // Update traffic light
+            updateTrafficLight(data.density);
+
+            // Scroll to results
+            results.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function updateTrafficLight(density) {
+            const redLight = document.getElementById('redLight');
+            const yellowLight = document.getElementById('yellowLight');
+            const greenLight = document.getElementById('greenLight');
+
+            // Reset all lights
+            redLight.classList.remove('active');
+            yellowLight.classList.remove('active');
+            greenLight.classList.remove('active');
+
+            // Activate appropriate light
+            if (density === 'High') {
+                redLight.classList.add('active');
+            } else if (density === 'Medium') {
+                yellowLight.classList.add('active');
+            } else {
+                greenLight.classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>
