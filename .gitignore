@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Uploads folder (user uploaded images)
+uploads/*
+!uploads/.gitkeep
+
+# YOLO model (will be downloaded automatically)
+*.pt
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Environment variables
+.env
+
+# Logs
+*.log
